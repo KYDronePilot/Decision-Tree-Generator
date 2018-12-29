@@ -1,63 +1,4 @@
-# Tree nodes that will print out the LaTeX code.
-class LatexNode:
-    # Template for node text.
-    NODE_TEMPLATE = '${node}$, edge label={{node[midway,fill=white,font=\\tiny] {{{edge}}}}}'
-
-    def __init__(self, val='', right=None, left=None, is_leaf=False, left_side=True, root=False):
-        """
-
-        :type right: LatexNode
-        :type left: LatexNode
-
-        """
-        self.val = val
-        self.right = right
-        self.left = left
-        self.is_leaf = is_leaf
-        self.left_side = left_side
-        # Determine edge label.
-        if root:
-            self.edge_label = ''
-        else:
-            self.edge_label = 'Yes' if left_side else 'No'
-
-    # def render(self):
-    #     # If node is leaf, prepare leaf text accordingly.
-    #     if self.is_leaf:
-    #         leaf = '[leaf] '
-    #     else:
-    #         leaf = ''
-    #     print('child { ', end='')
-    #     print('node {leaf}{{{val}}}'.format(leaf=leaf, val=self.val), end='')
-    #     # Recursively render children if they exist.
-    #     if self.left is not None:
-    #         self.left.render()
-    #     if self.right is not None:
-    #         self.right.render()
-    #     # Add closing bracket.
-    #     print(' }', end='')
-    #     pass
-
-    def render_forest(self):
-        #print('[ ', end='')
-        global latex_code
-        latex_code += '[ '
-        # If this is a pruned node, do not put in any contents.
-        if not 'null' == self.val:
-            #print(LatexNode.NODE_TEMPLATE.format(node=self.val, edge=self.edge_label), end=' ')
-            latex_code += LatexNode.NODE_TEMPLATE.format(node=self.val, edge=self.edge_label)
-        else:
-            #print(', phantom', end=' ')
-            latex_code += ', phantom'
-        # Recursively render children if they exist.
-        if self.left is not None:
-            self.left.render_forest()
-        if self.right is not None:
-            self.right.render_forest()
-        # Add closing bracket.
-        #print(' ]', end='')
-        latex_code += ' ]'
-        pass
+from src.latex import LatexTree, LatexNode
 
 
 # Simple stack ADT.
@@ -280,6 +221,17 @@ class TreeGenerator:
         self.root_latex = None
         # Base data set being worked with.
         self.base_data = base_data
+        # Latex tree.
+        self.latex_tree = LatexTree()
+
+    def render(self):
+        """
+        Render the Latex tree code.
+
+        Returns: Complete Latex code for displaying the tree.
+
+        """
+        return self.latex_tree.render()
 
     def get_restoring_decisions(self):
         """
@@ -314,7 +266,8 @@ class TreeGenerator:
                 break
             # Get decisions to be made to get to that branch.
             self.get_restoring_decisions()
-            pass
+        # Point Latex tree to root node.
+        self.latex_tree.root = self.root_latex
 
     def find_branch(self):
         """
@@ -359,7 +312,7 @@ class TreeGenerator:
         new_node = LatexNode(
             val=text,
             is_leaf=False,
-            left_side=is_left
+            is_left=is_left
         )
         # Link node at latest state to this new node.
         latest_node = latest_state.node
@@ -390,7 +343,7 @@ class TreeGenerator:
         new_node = LatexNode(
             val=text,
             is_leaf=True,
-            left_side=is_left
+            is_left=is_left
         )
         # Link node at latest state to this new node.
         latest_node = latest_state.node
@@ -504,8 +457,6 @@ class InsertionSort(TreeGenerator):
 
 
 if __name__ == '__main__':
-    tree_gen = InsertionSort(['a', 'b', 'c'])
-    latex_code = ''
+    tree_gen = InsertionSort(['a', 'b', 'c', 'd', 'e'])
     tree_gen.execution_manager()
-    tree_gen.root_latex.render_forest()
-    print(latex_code)
+    print(tree_gen.render())
