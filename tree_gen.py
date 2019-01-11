@@ -1,127 +1,5 @@
+from src.data_structures import Stack, Queue
 from src.latex import LatexTree, LatexNode
-
-
-# Simple stack ADT.
-class Stack:
-    def __init__(self):
-        # Use list as data container.
-        self._data = list()
-        # Number of elements.
-        self._n = 0
-
-    def __len__(self):
-        return self._n
-
-    def is_empty(self):
-        """
-
-        Returns: Whether or not stack is empty.
-
-        """
-        return self._n == 0
-
-    # Push element to the stack.
-    def push(self, elem):
-        self._data.append(elem)
-        self._n += 1
-
-    # Pop an element from the stack (Assuming stack filled when called).
-    def pop(self):
-        self._n -= 1
-        return self._data.pop()
-
-    # Get element on top.
-    def top(self):
-        return self._data[-1]
-
-    def copy(self):
-        """
-        Deep copy the Stack.
-
-        Returns: New Stack instance.
-
-        """
-        new_stack = Stack()
-        new_stack._data = self._data.copy()
-        new_stack._n = self._n
-        return new_stack
-
-    # Iterator from top to bottom.
-    def __iter__(self):
-        for i in range(len(self._data) - 1, -1, -1):
-            yield self._data[i]
-
-    # def __getitem__(self, item):
-    #     """
-    #     Reverse slicer for stack's data object.
-    #
-    #     Args:
-    #         item (slice): The slice.
-    #
-    #     Returns: Reverse sliced list.
-    #
-    #     """
-    #     new_start = item.stop - 1 if item.stop is not None else None
-    #     new_end = item.start - 1 if item.start is not None else None
-    #     new_slice = slice(new_start, new_end, -1)
-    #     return self._data[new_slice]
-
-    def __getitem__(self, item):
-        """
-        Slicer for the main data object.
-
-        Args:
-            item (slice): The slice.
-
-        Returns: Sliced data list.
-
-        """
-        return self._data[item]
-
-
-# Lightweight queue ADT.
-class Queue:
-    # Node for linked queue implementation.
-    class _Node:
-        def __init__(self, elem, next_elem):
-            self.elem = elem
-            self.next_elem = next_elem
-
-    def __init__(self):
-        # Head, tail and size.
-        self._head = None
-        self._tail = None
-        self._size = 0
-
-    def __len__(self):
-        return self._size
-
-    def is_empty(self):
-        return self._size == 0
-
-    # Get first element of queue without removing, assuming queue not empty.
-    def first(self):
-        return self._head.elem
-
-    # Dequeue an element, assuming queue is not empty.
-    def dequeue(self):
-        res = self._head.elem
-        self._head = self._head.next_elem
-        self._size -= 1
-        # Make tail None if queue is empty.
-        if self.is_empty():
-            self._tail = None
-        return res
-
-    # Enqueue an element.
-    def enqueue(self, e):
-        new = self._Node(e, None)
-        if self.is_empty():
-            self._head = new
-        else:
-            self._tail.next_elem = new
-        self._tail = new
-        self._size += 1
 
 
 # For maintaining information regarding comparisons.
@@ -456,7 +334,23 @@ class InsertionSort(TreeGenerator):
             self.data[j + 1] = elem
 
 
+class ShellSort(TreeGenerator):
+    def algorithm(self):
+        gap = len(self.data) // 2
+        while gap > 0:
+            for i in range(gap, len(self.data)):
+                temp = self.data[i]
+                j = i
+                # Sort the sub list for this gap
+                while j >= gap and self.comp(self.data[j - gap], '>', temp):
+                    self.data[j] = self.data[j - gap]
+                    j = j - gap
+                self.data[j] = temp
+            # Reduce the gap for the next element
+            gap = gap // 2
+
+
 if __name__ == '__main__':
-    tree_gen = InsertionSort(['a', 'b', 'c', 'd', 'e'])
+    tree_gen = ShellSort(['a', 'b', 'c', 'd', 'e'])
     tree_gen.execution_manager()
     print(tree_gen.render())
