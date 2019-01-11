@@ -1,105 +1,31 @@
 from src.data_structures import Stack, Queue
+from src.extra import Comparison, State
 from src.latex import LatexTree, LatexNode
 
 
-# For maintaining information regarding comparisons.
-# TODO: possibly handle non-unique lists.
-class Comparison:
-    # Operator negations.
-    NEGATIONS = {
-        '>': '<',
-        '<': '>',
-        '==': '!='
-    }
-
-    def __init__(self, e1, op, e2):
-        """
-
-        Args:
-            e1: The first element.
-            op: The operator.
-            e2: The second element.
-        """
-        self.e1 = e1
-        self.op = op
-        self.e2 = e2
-
-    def __str__(self):
-        return '{0} {1} {2}'.format(
-            self.e1,
-            self.op,
-            self.e2
-        )
-
-    def __eq__(self, other):
-        """
-        Check if two comparisons are equivalent.
-
-        Args:
-            other (Comparison): The other comparison.
-
-        Returns:
-            True if equivalent, False if not.
-
-        """
-        # If operators not equal, get the negation of one and check again.
-        if self.op != other.op:
-            other_op = Comparison.NEGATIONS[other.op]
-            # If still not equal, comparisons cannot be equivalent.
-            if self.op != other_op:
-                return False
-            # If comparison equal to negation, check cross elements.
-            return self.e1 == other.e2 and self.e2 == other.e1
-        # If operators are equal, then equivalence is based on elements.
-        return self.e1 == other.e1 and self.e2 == other.e2
-
-    def negate(self):
-        """
-        Get and return the negation of this comparison.
-
-        Returns:
-            Negation of comparison.
-
-        """
-        opposite = Comparison.NEGATIONS[self.op]
-        return Comparison(self.e1, opposite, self.e2)
-
-
-# Information about the state of execution at a branch.
-class State:
-    def __init__(self, node, comp):
-        # The previous state.
-        #self.previous = previous
-        # Last decision made at this state.
-        self.last_decision = True
-        # LatexNode at this branch.
-        self.node = node
-        # Comparison made at this node.
-        self.comp = comp
-
-
-# Main tree generation.
 class TreeGenerator:
+    """
+    Main tree generation.
+
+    Attributes:
+        restoring (bool): Whether algorithm is restoring a state.
+        lame_duck (bool): Whether algorithm is running out its course.
+        restoring_decisions (Queue): Decisions to get back to a state.
+        states (Stack): States to get to the current execution point.
+        data (list): The list being manipulated.
+        root_latex (LatexNode): Root LatexNode.
+        base_data (list): Base data list being manipulated (unchanging).
+        latex_tree (LatexTree): Latex tree.
+
+    """
     def __init__(self, base_data):
-        # The last state of this program.
-        self.last_state = None
-        # Whether the algorithm is in the process of restoring a state or not.
         self.restoring = False
-        # Whether the algorithm is in the process of running out its course.
         self.lame_duck = False
-        # Decisions to get back to a state.
         self.restoring_decisions = Queue()
-        # First decision to make after a restoration.
-        self.first_decision = True
-        # States to get to the current execution point.
         self.states = Stack()
-        # The list being manipulated.
         self.data = []
-        # The root LatexNode.
         self.root_latex = None
-        # Base data set being worked with.
         self.base_data = base_data
-        # Latex tree.
         self.latex_tree = LatexTree()
 
     def render(self):
@@ -113,9 +39,7 @@ class TreeGenerator:
 
     def get_restoring_decisions(self):
         """
-        Get decisions to restore and start down left branch of state in question.
-
-        Returns: TODO: Nothing?
+        Get decisions to restore a state and begin down right path (False).
 
         """
         # Enqueue each decision into restoring decisions.
@@ -124,16 +48,19 @@ class TreeGenerator:
         # Start exploring right branch of state, as last of restoration decisions.
         self.restoring_decisions.enqueue(False)
 
-    # Algorithm execution manager.
-    def execution_manager(self):
-        # Initialize data list.
+    def execute(self):
+        """
+        Algorithm execution manager.
+
+        """
+        # Initialize mutable data list.
         self.data = self.base_data.copy()
         # Execute algorithm until every possible path has been taken.
         while True:
             # Run algorithm.
             self.algorithm()
             # Terminate with blank node if last comparison is invalid.
-            self.check_valid()
+            self.terminate_if_invalid()
             # If algorithm was not already terminated, add leaf.
             if not self.lame_duck:
                 self.terminate_path(is_blank=False)
@@ -149,9 +76,7 @@ class TreeGenerator:
 
     def find_branch(self):
         """
-        Pop states until a state who's right path has not been explored is found.
-
-        Returns:
+        Pop states until a state who's right path has not been taken is found.
 
         """
         while not self.states.is_empty() and not self.states.top().last_decision:
@@ -170,16 +95,13 @@ class TreeGenerator:
         state.comp = new_comp
         # Change data back to the initial base data.
         self.data = self.base_data.copy()
-        # TODO: change 'comp' to something like 'truth'.
 
     def add_node(self, new_comp):
         """
-        Add a node to the execution path.
+        Add a state and node to the execution path.
 
         Args:
-            new_comp (Comparison): Comparison made at this node.
-
-        Returns:
+            new_comp (src.extra.Comparison): Comparison made at this node.
 
         """
         # Get latest state.
@@ -209,8 +131,6 @@ class TreeGenerator:
         Args:
             is_blank (bool): Whether or not the node is blank.
 
-        Returns:
-
         """
         # Get latest state.
         latest_state = self.states.top()
@@ -237,9 +157,7 @@ class TreeGenerator:
         Handle the first comparison (special case).
 
         Args:
-            new_comp (Comparison): The comparison made at root.
-
-        Returns:
+            new_comp (src.extra.Comparison): The comparison made at root.
 
         """
         # Create root LatexNode.
@@ -254,9 +172,9 @@ class TreeGenerator:
         # Set the root LatexNode.
         self.root_latex = new_node
 
-    def check_valid(self):
+    def terminate_if_invalid(self):
         """
-        Check if current point is valid.
+        Check if last comparison is valid, terminating if not.
 
         Returns: True if valid, False if not.
 
@@ -278,12 +196,12 @@ class TreeGenerator:
             op: Operator.
             e2: Second element.
 
-        Returns: TODO: Nothing?
+        Returns: True if algorithm should branch left, False if it should branch right.
 
         """
-        # If algorithm is running its course, always return True.
+        # If algorithm is running its course, always return False.
         if self.lame_duck:
-            return True
+            return False
         # If restoring to execution state, make next required decision.
         if self.restoring:
             decision = self.restoring_decisions.dequeue()
@@ -297,11 +215,9 @@ class TreeGenerator:
         if self.states.is_empty():
             self.first_comp(comp)
             return True
-        # Get latest state.
-        latest_state = self.states.top()
         # Terminate path if last comparison was invalid.
-        if not self.check_valid():
-            return True
+        if not self.terminate_if_invalid():
+            return False
         # Add new node to the execution path.
         self.add_node(comp)
         # Continue down left branch.
@@ -310,47 +226,3 @@ class TreeGenerator:
     # Algorithm method, overridden in inheritor.
     def algorithm(self):
         raise NotImplementedError('This method should be overridden with an algorithm implementation.')
-
-
-# Example Bubble Sort algorithm.
-class BubbleSort(TreeGenerator):
-    def algorithm(self):
-        for i in range(len(self.data) - 2, -1, -1):
-            for j in range(i + 1):
-                if self.comp(self.data[j], '>', self.data[j + 1]):
-                    tmp = self.data[j]
-                    self.data[j] = self.data[j + 1]
-                    self.data[j + 1] = tmp
-
-
-class InsertionSort(TreeGenerator):
-    def algorithm(self):
-        for i in range(1, len(self.data)):
-            elem = self.data[i]
-            j = i - 1
-            while j >= 0 and self.comp(self.data[j], '>', elem):
-                self.data[j + 1] = self.data[j]
-                j -= 1
-            self.data[j + 1] = elem
-
-
-class ShellSort(TreeGenerator):
-    def algorithm(self):
-        gap = len(self.data) // 2
-        while gap > 0:
-            for i in range(gap, len(self.data)):
-                temp = self.data[i]
-                j = i
-                # Sort the sub list for this gap
-                while j >= gap and self.comp(self.data[j - gap], '>', temp):
-                    self.data[j] = self.data[j - gap]
-                    j = j - gap
-                self.data[j] = temp
-            # Reduce the gap for the next element
-            gap = gap // 2
-
-
-if __name__ == '__main__':
-    tree_gen = ShellSort(['a', 'b', 'c', 'd', 'e'])
-    tree_gen.execution_manager()
-    print(tree_gen.render())
