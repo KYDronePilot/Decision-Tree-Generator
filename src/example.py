@@ -5,10 +5,11 @@ Some example algorithms to generate decision trees for.
 import os.path
 import sys
 
-file_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(file_dir)
 sys.path.append(file_dir)
 
-from src.tree_gen import TreeGenerator
+from src.decision_tree.tree_gen import TreeGenerator
 
 
 class BubbleSort(TreeGenerator):

@@ -1,6 +1,6 @@
-from src.data_structures import Stack, Queue
-from src.extra import Comparison, State
-from src.latex import LatexTree, LatexNode
+from data_structures import Stack, Queue
+from extra import Comparison, State
+from latex import LatexTree, LatexNode
 
 
 class TreeGenerator:
