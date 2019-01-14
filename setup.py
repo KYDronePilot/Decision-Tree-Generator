@@ -1,11 +1,11 @@
 from setuptools import setup
 
-with open('README.md', 'r') as f:
+with open('README.rst', 'r') as f:
     long_description = f.read()
 
 setup(
     name='Decision-Tree-Generator',
-    version='0.0.2',
+    version='0.0.4',
     packages=['decision_tree'],
     package_dir={'decision_tree': 'src/decision_tree'},
     url='https://github.com/KYDronePilot/Decision-Tree-Generator',

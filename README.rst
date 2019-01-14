@@ -4,7 +4,7 @@ Decision-Tree-Generator
 Program for generating decision tree LaTeX code for array-based
 algorithms
 
-.. image:: example/insertion_sort.png
+.. image:: https://raw.githubusercontent.com/KYDronePilot/Decision-Tree-Generator/master/example/insertion_sort.png
    :alt: Insertion Sort Decision Tree
 
 Insertion Sort Decision Tree
