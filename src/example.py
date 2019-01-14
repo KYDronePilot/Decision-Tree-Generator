@@ -2,14 +2,7 @@
 Some example algorithms to generate decision trees for.
 
 """
-import os.path
-import sys
-
-file_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(file_dir)
-sys.path.append(file_dir)
-
-from src.decision_tree.tree_gen import TreeGenerator
+from decision_tree import TreeGenerator
 
 
 class BubbleSort(TreeGenerator):
@@ -62,11 +55,11 @@ class ShellSort(TreeGenerator):
 if __name__ == '__main__':
     # Pass elements you want manipulated to the algorithm class's constructor as a list of chars.
     bubble = BubbleSort(['a', 'b', 'c', 'd'])
-    insertion = InsertionSort(['x', 'y', 'z'])
+    insertion = InsertionSort(['x', 'y', 'z', 'a'])
     shell = ShellSort(['w', 'a', 's', 'd'])
     # Run the execute method to generate the tree structure.
     # Change name to try other algorithms.
-    bubble.execute()
+    shell.execute()
     # Run the render method to render and return the Latex code for the tree structure.
-    code = bubble.render()
+    code = shell.render()
     print(code)
